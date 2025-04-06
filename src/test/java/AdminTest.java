@@ -52,7 +52,7 @@ public class AdminTest extends TestHelper {
     }
 
     @Test
-    public void addProductTest() {
+    public void addAndDeleteProductTest() {
         createAdminUser(username, password);
         createProduct(productName, productCategory, productDescription, productPrice);
         WebElement categorySpan = driver.findElement(By.className("prod_categ"));
@@ -129,10 +129,9 @@ public class AdminTest extends TestHelper {
 
 
         } finally {
-            // Ensure product is always deleted even when assertion fails due-to bugs
+            // Ensure product is always deleted even when assertion fails due to bugs
             deleteProduct("Something Else");
         }
-
     }
 
 

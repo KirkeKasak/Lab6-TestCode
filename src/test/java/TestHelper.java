@@ -55,6 +55,10 @@ public class TestHelper {
         return driver.findElement(By.xpath("//input[@value='" + value + "']"));
     }
 
+    WebElement inputByValueInElement(String value, WebElement element) {
+        return element.findElement(By.xpath("//input[@value='" + value + "']"));
+    }
+
     void assertNotice(String noticeText) {
         WebElement notice = driver.findElement(By.id("notice"));
         assertEquals(noticeText, notice.getText());
