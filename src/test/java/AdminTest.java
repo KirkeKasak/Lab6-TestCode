@@ -27,6 +27,7 @@ public class AdminTest extends TestHelper {
 
 
     @Test
+    // Negative test invalid password confirm
     public void registerAccount_NonMatchingPassword_Test() {
         driver.get(baseUrlAdmin);
         goToPage("Register");
@@ -61,6 +62,7 @@ public class AdminTest extends TestHelper {
     }
 
     @Test
+    // Negative test invalid input data
     public void addProduct_InvalidData_Test() {
         createAdminUser(username, password);
 
@@ -148,6 +150,7 @@ public class AdminTest extends TestHelper {
     }
 
     @Test
+    // Negative test
     public void login_InvalidPassword_test() {
         createAdminUser(username, password);
         logout();
