@@ -160,6 +160,7 @@ public class EndUserTest extends TestHelper {
 
     @Test
     // Negative test, invalid input data
+    // Expected to fail on v2.1!
     public void checkout_withValidationErrorsTest() {
         addProductToCart(product1Name, 1);
         addProductToCart(product3Name, 3);
@@ -172,12 +173,17 @@ public class EndUserTest extends TestHelper {
 
         WebElement error = driver.findElement(By.id("error_explanation"));
 
-        // First row is commented out in HTML!, Should it be?
-        assertEquals(// "4 errors prohibited this user from being saved:\n" +
-                "Name can't be blank\n" +
-                "Address can't be blank\n" +
-                "Email can't be blank\n" +
-                "Pay type is not included in the list", error.getText());
+        try {
+            // First row is commented out by  HTML comments <!-- -->. We presume it to be a mistake
+            assertEquals("4 errors prohibited this user from being saved:\n" +
+                    "Name can't be blank\n" +
+                    "Address can't be blank\n" +
+                    "Email can't be blank\n" +
+                    "Pay type is not included in the list", error.getText());
+        } finally {
+            inputByValue("Empty cart").click();
+            assertNotice("Cart successfully deleted.");
+        }
     }
 
 

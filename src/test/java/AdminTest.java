@@ -84,6 +84,7 @@ public class AdminTest extends TestHelper {
     }
 
     @Test
+    // Expected to fail on v2.1!
     public void editProductTest() {
         createAdminUser(username, password);
         createProduct(productName, productCategory, productDescription, productPrice);
