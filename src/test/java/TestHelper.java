@@ -56,7 +56,7 @@ public class TestHelper {
     }
 
     WebElement inputByValueInElement(String value, WebElement element) {
-        return element.findElement(By.xpath("//input[@value='" + value + "']"));
+        return element.findElement(By.xpath(".//input[@value='" + value + "']"));
     }
 
     void assertNotice(String noticeText) {
