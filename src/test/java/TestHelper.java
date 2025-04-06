@@ -131,22 +131,18 @@ public class TestHelper {
         inputByValue("Create Product").click();
     }
 
-    void deleteProduct(String name, String category) {
+    void deleteProduct(String name) {
         goToPage("Products");
 
         // Wait for the new row and assert the contents
-        WebElement newProductRow = waitForElementById(name);
-
-        WebElement productDescriptionCell = newProductRow.findElement(By.className("list_description"));
+        WebElement productRow = waitForElementById(name);
+        WebElement productDescriptionCell = productRow.findElement(By.className("list_description"));
 
         WebElement titleLink = productDescriptionCell.findElement(By.tagName("a"));
         assertEquals(name, titleLink.getText());
 
-        WebElement categorySpan = productDescriptionCell.findElement(By.className("prod_categ"));
-        assertEquals(category, categorySpan.getText());
-
         // Delete the existing product and verify
-        newProductRow.findElement(By.linkText("Delete")).click();
+        productRow.findElement(By.linkText("Delete")).click();
         assertNotice("Product was successfully destroyed.");
     }
 

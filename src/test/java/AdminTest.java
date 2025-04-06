@@ -12,6 +12,11 @@ public class AdminTest extends TestHelper {
     private String username = "Coccinella2";
     private String password = "T2piline666";
 
+    // Default product info
+    String productName = "The River";
+    String productCategory = "Books";
+    String productDescription = "The River (Väylä) is a 2021 novel by author Rosa Liksom.";
+    String productPrice = "39.90";
 
     @Test
     public void registerAccountTest() {
@@ -49,10 +54,10 @@ public class AdminTest extends TestHelper {
     @Test
     public void addProductTest() {
         createAdminUser(username, password);
-        String name = "The River";
-        String category = "Books";
-        createProduct(name, category, "The River (Väylä) is a 2021 novel by author Rosa Liksom.", "39.99");
-        deleteProduct(name, category);
+        createProduct(productName, productCategory, productDescription, productPrice);
+        WebElement categorySpan = driver.findElement(By.className("prod_categ"));
+        assertEquals(productCategory, categorySpan.getText());
+        deleteProduct(productName);
     }
 
     @Test
@@ -73,6 +78,60 @@ public class AdminTest extends TestHelper {
         assertEquals("2 errors prohibited this product from being saved:\n"
                 + "Description can't be blank\n" +
                 "Price is not a number", notice.getText());
+
+    }
+
+    @Test
+    public void editProductTest() {
+        createAdminUser(username, password);
+        createProduct(productName, productCategory, productDescription, productPrice);
+
+        WebElement productRow = waitForElementById(productName);
+        productRow.findElement(By.linkText("Edit")).click();
+
+        String header = driver.findElement(By.className("product_header")).getText();
+        assertEquals("Editing Product", header);
+
+        // Fill the form and click Update
+        WebElement titleField = driver.findElement(By.id("product_title"));
+        titleField.clear();
+        titleField.sendKeys("Something Else");
+
+        WebElement descField = driver.findElement(By.id("product_description"));
+        descField.clear();
+        descField.sendKeys("Entirely");
+
+        Select dropdown = new Select(driver.findElement(By.id("product_prod_type")));
+        dropdown.selectByVisibleText("Other");
+
+        WebElement priceField = driver.findElement(By.id("product_price"));
+        priceField.clear();
+        priceField.sendKeys("5.0");
+
+        inputByValue("Update Product").click();
+
+        try {
+            // Assert changes
+            assertNotice("Product was successfully updated.");
+
+            String title = driver.findElement(By.xpath("//p[strong[text()='Title:']]")).getText();
+            assertEquals("Title: Something Else", title);
+
+            String description = driver.findElement(By.xpath("//p[strong[text()='Description:']]")).getText();
+            assertEquals("Description: Entirely", description);
+
+            String price = driver.findElement(By.xpath("//p[strong[text()='Price:']]")).getText();
+            assertEquals("Price: €5.00", price);
+
+            String type = driver.findElement(By.xpath("//p[strong[text()='Type:']]")).getText();
+            // This fails due to bug Number 1 in code
+            assertEquals("Type: Other", type);
+
+
+        } finally {
+            // Ensure product is always deleted even when assertion fails due-to bugs
+            deleteProduct("Something Else");
+        }
 
     }
 
