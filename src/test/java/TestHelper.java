@@ -90,14 +90,28 @@ public class TestHelper {
         waitForElementById("Admin");
     }
 
+    void createAdminUser(String username, String password) {
+        driver.get(baseUrlAdmin);
+        goToPage("Register");
+
+        driver.findElement(By.id("user_name")).sendKeys(username);
+        driver.findElement(By.id("user_password")).sendKeys(password);
+        driver.findElement(By.id("user_password_confirmation")).sendKeys(password);
+
+        inputByValue("Create User").click();
+    }
+
+    void removeAdminUser() {
+        goToPage("Admin");
+        if (isElementPresent(By.linkText("Delete"))) {
+            driver.findElement(By.linkText("Delete")).click();
+            assertNotice("User was successfully deleted.");
+        }
+    }
+
     @After
     public void tearDown(){
         driver.close();
-    }
-
-    @AfterClass
-    public static void closeBrowser() {
-        driver.quit();
     }
 
 }

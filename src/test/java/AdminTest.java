@@ -13,23 +13,15 @@ public class AdminTest extends TestHelper {
 
 
     @Test
-    public void registerAccountSuccessTest() {
-        driver.get(baseUrlAdmin);
-        goToPage("Register");
-
-        driver.findElement(By.id("user_name")).sendKeys(username);
-        driver.findElement(By.id("user_password")).sendKeys(password);
-        driver.findElement(By.id("user_password_confirmation")).sendKeys(password);
-
-        inputByValue("Create User").click();
-
+    public void registerAccount_Success_Test() {
+        createAdminUser(username, password);
         WebElement notice = driver.findElement(By.id("notice"));
-        assertEquals("User Coccinella2 was successfully created.", notice.getText());
-
+        assertEquals("User " + username + " was successfully created.", notice.getText());
     }
 
+
     @Test
-    public void registerAccountNonMatchingPasswordTest() {
+    public void registerAccount_NonMatchingPassword_Test() {
         driver.get(baseUrlAdmin);
         goToPage("Register");
 
@@ -42,15 +34,41 @@ public class AdminTest extends TestHelper {
         WebElement notice = driver.findElement(By.id("error_explanation"));
         assertEquals("1 error prohibited this user from being saved:\n" +
                 "Password confirmation doesn't match Password", notice.getText());
+    }
+
+    @Test
+    public void deleteAccountTest() {
+        createAdminUser(username, password);
+        goToPage("Admin");
+        // Explicitly delete user, will fail if button is not there
+        driver.findElement(By.linkText("Delete")).click();
+        assertNotice("User was successfully deleted.");
+    }
+
+    @Test
+    public void loginLogoutTest(){
+        createAdminUser(username, password);
+        logout();
+        login(username, password);
+
+        waitForElementById("Products");
+        WebElement adminHeader = driver.findElement(By.xpath("//a[@href=\"/admin\"]"));
+        assertEquals("Admin", adminHeader.getText());
 
     }
 
+    @Test
+    public void login_InvalidPassword_test() {
+        createAdminUser(username, password);
+        logout();
+        login(username, "invalidPassword");
+        assertNotice("Invalid user/password combination");
+        login(username, password);
+    }
+
+
     @After
-    public void deleteUser() {
-        goToPage("Admin");
-        if (isElementPresent(By.linkText("Delete"))) {
-            driver.findElement(By.linkText("Delete")).click();
-            assertNotice("User was successfully deleted.");
-        }
+    public void cleanupAdmin() {
+       removeAdminUser();
     }
 }
