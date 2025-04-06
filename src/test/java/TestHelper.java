@@ -51,6 +51,10 @@ public class TestHelper {
         return new WebDriverWait(driver, waitForResponseTime).until(ExpectedConditions.presenceOfElementLocated(By.id(id)));
     }
 
+    WebElement waitForElement(By by){
+        return new WebDriverWait(driver, waitForResponseTime).until(ExpectedConditions.presenceOfElementLocated(by));
+    }
+
     WebElement inputByValue(String value) {
         return driver.findElement(By.xpath("//input[@value='" + value + "']"));
     }

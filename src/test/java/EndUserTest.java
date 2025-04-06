@@ -4,6 +4,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class EndUserTest extends TestHelper {
 
@@ -14,15 +16,10 @@ public class EndUserTest extends TestHelper {
     @Test
     public void addProductToCartTest() {
         addProductToCart(product1Name, 3);
-        assertProductInCart(product1Name, 3, 1);
-    }
 
-    @Test
-    public void addToCar_MultipleProducts_Test() {
-        addProductToCart(product1Name, 3);
-        addProductToCart(product2Name, 4);
         assertProductInCart(product1Name, 3, 1);
-        assertProductInCart(product2Name, 4, 2);
+        assertCartRowCount(1);
+        assertTotal("€78.00");
     }
 
     @Test
@@ -34,6 +31,66 @@ public class EndUserTest extends TestHelper {
     }
 
     @Test
+    public void addMultipleToCart_Test() {
+        addProductToCart(product1Name, 3);
+        addProductToCart(product2Name, 4);
+
+        assertProductInCart(product1Name, 3, 1);
+        assertProductInCart(product2Name, 4, 2);
+
+        assertCartRowCount(2);
+        assertTotal("€197.96");
+    }
+
+    @Test
+    public void addToCart_andChangeQuantity() {
+        addProductToCart(product2Name, 3);
+
+        increaseQuantityOfCartRow(1);
+        assertProductInCart(product2Name, 4, 1);
+
+        decreaseQuantityOfCartRow(1);
+        assertProductInCart(product2Name, 3, 1);
+
+        assertCartRowCount(1);
+        assertTotal("€89.97");
+    }
+
+    @Test
+    public void addMultipleToCart_andRemoveOne() {
+        addProductToCart(product2Name, 9);
+        addProductToCart(product3Name, 1);
+
+        assertCartRowCount(2);
+        assertTotal("€295.91");
+
+        deleteProductOnCartRow(1);
+
+        assertCartRowCount(1);
+        assertProductInCart(product3Name, 1, 1);
+        assertTotal("€26.00");
+    }
+
+
+    @Test
+    public void addMultipleToCart_AndChangeQuantities_Test() {
+        addProductToCart(product1Name, 2);
+        addProductToCart(product3Name, 5);
+        addProductToCart(product2Name, 3);
+
+        increaseQuantityOfCartRow(3);
+        decreaseQuantityOfCartRow(2);
+        deleteProductOnCartRow(1);
+        increaseQuantityOfCartRow(2);
+
+        assertProductInCart(product2Name, 4, 1);
+        assertProductInCart(product3Name, 5, 2);
+
+        assertCartRowCount(2);
+        assertTotal("€249.96");
+    }
+
+    @Test
     public void filterByCategory_andAddToCart_Test() {
         driver.findElement(By.linkText("Books")).click();
         addProductToCart(product2Name, 2);
@@ -41,10 +98,30 @@ public class EndUserTest extends TestHelper {
     }
 
     @Test
+    // Negative test for missing elements
+    public void filterByCategory_andTrAddToCart_Test() {
+        driver.findElement(By.linkText("Sunglasses")).click();
+        assertFalse("Element should appear in search", isElementPresent(By.id(product2Name + "_entry")));
+    }
+
+    @Test
     public void searchByName_andAddToCart_Test() {
         driver.findElement(By.id("search_input")).sendKeys("ar");
         addProductToCart(product3Name);
         assertProductInCart(product3Name, 1, 1);
+    }
+
+
+    @Test
+    // Negative test for missing elements
+    public void searchByName_andTrySelectingMissingItem_Test() {
+        driver.findElement(By.id("search_input")).sendKeys("sung");
+
+        addProductToCart(product1Name);
+        assertTrue("Element should appear in search", driver.findElement(By.id(product3Name + "_entry")).isDisplayed());
+        assertFalse("Element should not appear in search", driver.findElement(By.id(product2Name + "_entry")).isDisplayed());
+
+        assertProductInCart(product1Name, 1, 1);
     }
 
 
@@ -61,10 +138,20 @@ public class EndUserTest extends TestHelper {
         }
     }
 
-    void assertProductInCart(String productName, int quantity, int row) {
-        WebElement cart = driver.findElement(By.id("cart"));
+    void assertTotal(String expected) {
+        String total = driver.findElement(By.className("total_cell")).getText();
+        assertEquals(expected, total);
+    }
 
-        WebElement targetRow = cart.findElement(By.xpath("(//tr[contains(@class, 'cart_row')])[" + (row) + "]"));
+    void assertCartRowCount(int expectedRowCount) {
+        WebElement cart = driver.findElement(By.id("cart"));
+        int actualRowCount = cart.findElements(By.cssSelector("tr.cart_row")).size();
+        assertEquals("Cart row count mismatch", expectedRowCount, actualRowCount);
+    }
+
+
+    void assertProductInCart(String productName, int quantity, int row) {
+        WebElement targetRow = getCartRowByIndex(row);
 
         // Quantity (first <td>)
         String actualQuantityText = targetRow.findElement(By.xpath("td[1]")).getText().trim();
@@ -73,6 +160,29 @@ public class EndUserTest extends TestHelper {
         // Product name (second <td>)
         String actualProductName = targetRow.findElement(By.xpath("td[2]")).getText().trim();
         assertEquals("Wrong product at row " + row, productName, actualProductName);
+    }
+
+    void increaseQuantityOfCartRow(int row) {
+        WebElement targetRow = getCartRowByIndex(row);
+        WebElement increaseButton = targetRow.findElement(By.xpath("td[@class='quantity'][2]/a"));
+        increaseButton.click();
+    }
+
+    void decreaseQuantityOfCartRow(int row) {
+        WebElement targetRow = getCartRowByIndex(row);
+        WebElement decreaseButton = targetRow.findElement(By.xpath("td[@class='quantity'][1]/a"));
+        decreaseButton.click();
+    }
+
+    void deleteProductOnCartRow(int row) {
+        WebElement targetRow = getCartRowByIndex(row);
+        WebElement deleteButton = targetRow.findElement(By.cssSelector("td#delete_button a"));
+        deleteButton.click();
+    }
+
+    private WebElement getCartRowByIndex(int row) {
+        WebElement cart = driver.findElement(By.id("cart"));
+        return cart.findElement(By.xpath("(//tr[contains(@class, 'cart_row')])[" + row + "]"));
     }
 
     @After
